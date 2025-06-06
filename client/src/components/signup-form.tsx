@@ -63,43 +63,42 @@ export default function SignupForm() {
   };
 
   return (
-    <div className="glassmorphism rounded-2xl p-6 md:p-8 shadow-2xl w-full max-w-md mx-auto">
-      <h2 className="text-2xl font-serif font-bold mb-6 text-gray-800">Start Your Journey</h2>
+    <div className="glassmorphism rounded-2xl p-6 md:p-8 shadow-lg w-full max-w-sm">
+      <h2 className="text-xl font-medium mb-6 text-gray-800 text-center">Sign up today!</h2>
       
       <form className="flex flex-col space-y-4" onSubmit={handleSubmit}>
         <motion.input
           type="text"
-          placeholder="Full Name"
+          placeholder="Name"
           value={formData.name}
           onChange={(e) => handleInputChange("name", e.target.value)}
-          className="p-4 rounded-xl border-0 bg-white/40 backdrop-blur-sm text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:bg-white/60 transition-all duration-300"
+          className="p-3 rounded-lg border-0 bg-white/60 backdrop-blur-sm text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-300 focus:bg-white/80 transition-all duration-300"
           whileFocus={{ scale: 1.02 }}
           disabled={signupMutation.isPending}
         />
         
         <motion.input
           type="email"
-          placeholder="Email Address"
+          placeholder="Email"
           value={formData.email}
           onChange={(e) => handleInputChange("email", e.target.value)}
-          className="p-4 rounded-xl border-0 bg-white/40 backdrop-blur-sm text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:bg-white/60 transition-all duration-300"
+          className="p-3 rounded-lg border-0 bg-white/60 backdrop-blur-sm text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-300 focus:bg-white/80 transition-all duration-300"
           whileFocus={{ scale: 1.02 }}
           disabled={signupMutation.isPending}
         />
         
         <motion.button
           type="submit"
-          className="bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white font-semibold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-          whileHover={{ scale: signupMutation.isPending ? 1 : 1.05 }}
-          whileTap={{ scale: signupMutation.isPending ? 1 : 0.95 }}
+          className="bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 text-white font-medium py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          whileHover={{ scale: signupMutation.isPending ? 1 : 1.02 }}
+          whileTap={{ scale: signupMutation.isPending ? 1 : 0.98 }}
           disabled={signupMutation.isPending}
         >
-          {signupMutation.isPending ? "SUBMITTING..." : "GET DISCOVERED"}
+          {signupMutation.isPending ? "SUBMITTING..." : "SUBMIT"}
         </motion.button>
       </form>
       
-      <p className="text-sm text-gray-700 mt-4 text-center">
-        <FaShieldAlt className="inline mr-2" />
+      <p className="text-sm text-gray-600 mt-4 text-center">
         We'll guide you step by step
       </p>
     </div>
