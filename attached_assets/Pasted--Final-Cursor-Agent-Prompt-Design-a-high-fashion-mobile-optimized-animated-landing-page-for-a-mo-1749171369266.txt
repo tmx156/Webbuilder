@@ -1,0 +1,77 @@
+ Final Cursor Agent Prompt:
+
+Design a high-fashion, mobile-optimized, animated landing page for a modeling consultancy called LevelOneTalent, inspired by luxury agencies like Storm Models, Elite, and IMG.
+
+🎯 Main Goal: Capture attention with an energetic and polished first impression, encouraging diverse users to sign up. Page must look alive, beautiful, and aspirational—yet advanced with motion and interaction.
+
+🔹 Visual Style:
+Use a vibrant, editorial palette: warm pastels, clean whites, soft beige, radiant pinks, peach, and golden skin tones. Accent with high-contrast fashion tones like neon coral, electric lavender, mint, or sky blue for subtle highlights.
+
+The design must feel airy, elegant, and dynamic—like a Vogue editorial meets cutting-edge tech.
+
+Use fashion photography-style imagery (can be mock placeholder) with soft gradients, parallax motion, and a luxury aesthetic.
+
+✨ Hero Section:
+Fullscreen, edge-to-edge editorial photo of a diverse model or group (set as full background with overlaying text and animation).
+
+Add subtle WebGL animation over the background – like moving light streaks, subtle bloom particles, or glass morphing effects (use @react-three/fiber or lightweight canvas shaders).
+
+Animated heading (Framer Motion):
+
+H1: “MODELS WANTED” (Large, modern serif or editorial sans font)
+
+Subhead: “All ages. All backgrounds. One chance to shine.”
+
+Signup form (Name + Email + Submit) styled in white/peach glassmorphism with clean focus states
+
+Button hover: gentle scale + gradient sweep animation
+
+Add a subtle “We’ll guide you step by step” reassurance under the form
+
+🔹 Modeling Categories Section:
+Title: “Discover Your Lane” or “Categories We Cover”
+
+Display four animated cards, each glowing softly or sliding into view on scroll, with imagery and modern fashion-style captions:
+
+👧 Child & Teen – Fresh faces, big dreams
+
+👨 Male – Editorial. Commercial. Iconic.
+
+👩 Female – From beauty to catwalk.
+
+👵 Mature – Style has no age.
+
+Each card should:
+
+Feature a vibrant model image
+
+Use hover or tap animations (card zoom, slight tilt, text shift)
+
+Rounded corners, soft shadow, and borderless glow
+
+🔹 Footer:
+Include social icons (Instagram, TikTok, Facebook) with soft hover animations
+
+Add a clean link to privacy policy or FAQ
+
+🌐 Responsive & Mobile-Ready:
+Use Tailwind CSS responsive classes
+
+On mobile: stack form + categories vertically with smooth scroll transitions
+
+Keep text large and readable with comfortable padding
+
+🛠 Tech & UX:
+Built using React, Tailwind CSS, Framer Motion
+
+Use @react-three/fiber for light WebGL effects or fallback canvas particles
+
+Font suggestions:
+
+Headlines: Playfair Display, Libre Bodoni, or Unbounded
+
+Body: Poppins, Inter, or Urbanist
+
+Use scroll-triggered animations, hover micro-interactions, and gradient transitions for a lively UX
+
+Optimized for performance and accessibility
