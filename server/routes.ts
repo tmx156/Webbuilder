@@ -3,27 +3,175 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertSignupSchema } from "@shared/schema";
 import { z } from "zod";
+import express from 'express';
+import { supabase } from './lib/supabase';
+import { sendSignupNotification } from './lib/email';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // API route for model signups
   app.post("/api/signups", async (req, res) => {
     try {
-      const signupData = insertSignupSchema.parse(req.body);
-      const signup = await storage.createSignup(signupData);
-      res.json({ success: true, signup });
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        res.status(400).json({ 
-          success: false, 
-          error: "Invalid form data", 
-          details: error.errors 
-        });
-      } else {
-        res.status(500).json({ 
-          success: false, 
-          error: "Failed to submit signup" 
-        });
+      console.log('Received signup form submission');
+      const { name, email, age, gender, mobile, postcode, photo, category } = req.body;
+      console.log('Form data received:', { name, email, age, gender, mobile, postcode, category, hasPhoto: !!photo });
+      
+      // Handle the photo upload using base64 if provided
+      let photoUrl = null;
+      if (photo && typeof photo === 'string' && photo.startsWith('data:image')) {
+        try {
+          console.log('Processing photo upload...');
+          // Parse the base64 string
+          const parts = photo.split(',');
+          const mime = parts[0].match(/:(.*?);/)?.[1] || 'image/jpeg';
+          const base64Data = parts[1];
+          const buffer = Buffer.from(base64Data, 'base64');
+          
+          // Generate a unique filename
+          const fileName = `${Date.now()}-${name.replace(/\s+/g, '-').toLowerCase()}.jpg`;
+          
+          // Upload to Supabase storage
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('model-photos')
+            .upload(fileName, buffer, {
+              contentType: mime,
+              upsert: false
+            });
+          
+          if (uploadError) {
+            console.error('Upload error:', uploadError);
+            throw uploadError;
+          }
+          
+          // Get the public URL for the image
+          const { data: urlData } = supabase.storage
+            .from('model-photos')
+            .getPublicUrl(fileName);
+          
+          photoUrl = urlData.publicUrl;
+          console.log('Photo uploaded successfully:', photoUrl);
+        } catch (uploadErr) {
+          console.error('Failed to process photo:', uploadErr);
+          // Continue with submission even if photo upload fails
+        }
       }
+      
+      // Save to Supabase database
+      console.log('Saving submission to database...');
+      
+      // Create a submission object without gender first
+      const submission = {
+        name,
+        email,
+        age,
+        mobile,
+        postcode,
+        photo_url: photoUrl,
+        category
+      };
+      
+      // Try to include gender but handle the case where it might not exist in schema
+      if (gender) {
+        try {
+          let responseData;
+          const { data, error } = await supabase
+            .from('signups')
+            .insert([{ ...submission, gender }])
+            .select();
+          
+          if (error) {
+            console.error('Database error with gender:', error);
+            
+            // If gender column doesn't exist, try without it
+            if (error.message.includes('gender')) {
+              console.log('Retrying without gender field...');
+              const { data: dataNoGender, error: errorNoGender } = await supabase
+                .from('signups')
+                .insert([submission])
+                .select();
+              
+              if (errorNoGender) {
+                console.error('Database error without gender:', errorNoGender);
+                throw errorNoGender;
+              }
+              
+              responseData = dataNoGender;
+            } else {
+              throw error;
+            }
+          } else {
+            responseData = data;
+          }
+          
+          console.log('Signup saved successfully to database');
+          
+          // Send email notification
+          console.log('Preparing to send email notification...');
+          if (responseData && responseData.length > 0) {
+            try {
+              console.log('Calling email service...');
+              const emailSent = await sendSignupNotification({ ...responseData[0], gender: gender || 'female' });
+              if (emailSent) {
+                console.log('Email notification sent successfully');
+              } else {
+                console.warn('Failed to send email notification - service returned false');
+              }
+            } catch (emailError) {
+              console.error('Error in email notification process:', emailError);
+              // Continue even if email fails
+            }
+          } else {
+            console.warn('No data returned from database insert, skipping email notification');
+          }
+          
+          res.json({ success: true, data: responseData });
+        } catch (insertError: any) {
+          console.error('Signup process error:', insertError);
+          res.status(500).json({ 
+            error: 'Failed to process signup', 
+            details: insertError.message 
+          });
+        }
+      } else {
+        // Original code without gender
+        const { data, error } = await supabase
+          .from('signups')
+          .insert([submission])
+          .select();
+        
+        if (error) {
+          console.error('Database error:', error);
+          throw error;
+        }
+        
+        console.log('Signup saved successfully to database');
+        
+        // Send email notification
+        console.log('Preparing to send email notification...');
+        if (data && data.length > 0) {
+          try {
+            console.log('Calling email service...');
+            const emailSent = await sendSignupNotification({ ...data[0], gender: 'female' });
+            if (emailSent) {
+              console.log('Email notification sent successfully');
+            } else {
+              console.warn('Failed to send email notification - service returned false');
+            }
+          } catch (emailError) {
+            console.error('Error in email notification process:', emailError);
+            // Continue even if email fails
+          }
+        } else {
+          console.warn('No data returned from database insert, skipping email notification');
+        }
+        
+        res.json({ success: true, data });
+      }
+    } catch (error: any) {
+      console.error('Signup process error:', error);
+      res.status(500).json({ 
+        error: 'Failed to process signup', 
+        details: error.message 
+      });
     }
   });
 

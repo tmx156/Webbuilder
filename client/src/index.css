@@ -1,4 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family:Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap');
+/* stylelint-disable at-rule-no-unknown */
+/* stylelint-disable at-rule-empty-line-before */
+/* stylelint-disable function-no-unknown */
+/* stylelint-disable declaration-empty-line-before */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -83,8 +88,10 @@
 @layer components {
   .glassmorphism {
     background: rgba(255, 255, 255, 0.25);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
   }
   
   .font-serif {
@@ -98,19 +105,39 @@
 
 @layer utilities {
   .text-shadow-lg {
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
   }
   
   .animate-float {
-    animation: float 6s ease-in-out infinite;
+    animation: float 8s ease-in-out infinite;
   }
   
   .animate-pulse-glow {
-    animation: pulse-glow 2s ease-in-out infinite alternate;
+    animation: pulse-glow 3s ease-in-out infinite alternate;
+  }
+  
+  .animate-fadeIn {
+    animation: fadeIn 0.5s ease-in-out forwards;
   }
   
   .bg-gradient-radial {
     background: radial-gradient(circle, var(--tw-gradient-stops));
+  }
+  
+  .bg-radial-gradient {
+    background: radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.2) 80%, rgba(0, 0, 0, 0.3) 100%);
+    pointer-events: none;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -119,25 +146,25 @@
     transform: translateY(0px);
   }
   50% {
-    transform: translateY(-20px);
+    transform: translateY(-15px);
   }
 }
 
 @keyframes pulse-glow {
   0% {
-    box-shadow: 0 0 20px rgba(244, 114, 182, 0.4);
+    box-shadow: 0 0 15px rgba(244, 114, 182, 0.3);
   }
   100% {
-    box-shadow: 0 0 40px rgba(244, 114, 182, 0.8);
+    box-shadow: 0 0 30px rgba(244, 114, 182, 0.6);
   }
 }
 
-/* Smooth scrolling */
+@media (min-width: 768px) {
 html {
   scroll-behavior: smooth;
+  }
 }
 
-/* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -152,5 +179,208 @@ html {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(244, 114, 182, 0.8);
+  background: rgba(244, 114, 182, 0.7);
+}
+
+.light-particle {
+  position: absolute;
+  border-radius: 50%;
+  background: white;
+  opacity: 0.3;
+  filter: blur(5px);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  animation: float-particle 15s infinite ease-in-out;
+}
+
+.particle-1 {
+  width: 60px;
+  height: 60px;
+  top: 20%;
+  left: 15%;
+  animation-delay: -2s;
+  animation-duration: 15s;
+}
+
+.particle-2 {
+  width: 45px;
+  height: 45px;
+  top: 70%;
+  left: 85%;
+  animation-delay: -4s;
+  animation-duration: 18s;
+}
+
+.particle-3 {
+  width: 70px;
+  height: 70px;
+  top: 45%;
+  left: 65%;
+  animation-delay: -6s;
+  animation-duration: 20s;
+}
+
+.particle-4 {
+  width: 40px;
+  height: 40px;
+  top: 30%;
+  left: 75%;
+  animation-delay: -3s;
+  animation-duration: 16s;
+}
+
+.particle-5 {
+  width: 50px;
+  height: 50px;
+  top: 60%;
+  left: 25%;
+  animation-delay: -7s;
+  animation-duration: 18s;
+}
+
+@keyframes float-particle {
+  0%, 100% {
+    transform: translateY(0) translateX(0);
+  }
+  50% {
+    transform: translateY(-30px) translateX(20px);
+  }
+}
+
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 0.15;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.3;
+    transform: scale(1.05);
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 8s ease-in-out infinite;
+}
+
+/* Form input styles */
+input,
+select,
+textarea {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 12px 16px;
+  font-size: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  transition: all 0.2s ease;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+/* Focus states */
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: #f43f5e; /* rose-500 */
+  background: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 0 0 2px rgba(244, 63, 94, 0.2);
+}
+
+/* Remove default arrow in IE */
+select::-ms-expand {
+  display: none;
+}
+
+/* Custom select arrow */
+select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+}
+
+/* File input button */
+input[type="file"] {
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Fix for iOS zoom on input focus */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="number"],
+  input[type="password"],
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Ensure inputs are properly sized on mobile */
+.input-container {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  position: relative;
+}
+
+/* Fix for iOS form controls */
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="number"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  border-radius: 12px;
+}
+
+/* Form container styles */
+.glassmorphism {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .form-container {
+    padding-bottom: 20vh;
+  }
+  
+  /* Prevent layout shifts when typing on mobile */
+  body {
+    -webkit-text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+  }
+  
+  /* Ensure inputs are tap-friendly */
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="number"],
+  select,
+  textarea {
+    min-height: 48px; /* Minimum touch target size */
+  }
+}
+
+.form-transition {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Mobile form overlay styles */
+.mobile-form-overlay {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }

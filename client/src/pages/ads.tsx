@@ -124,15 +124,15 @@ const EnhancedLogoHeader = () => {
   );
 };
 
-export default function Home() {
+export default function AdsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-peach-50 via-rose-50 to-white overflow-x-hidden">
       <EnhancedLogoHeader />
-      <HeroSection />
+      <HeroSection categoryOverride="ads" />
       <BrandsSection />
       <CategoriesSection />
       <TestimonialsSection />
       <Footer />
     </div>
   );
-}
+} 
