@@ -6,10 +6,22 @@ import { z } from "zod";
 import express from 'express';
 import { supabase } from './lib/supabase';
 import { sendSignupNotification } from './lib/email';
+import { Buffer } from 'buffer';
+
+interface SignupRequestBody {
+  name: string;
+  email: string;
+  age: string;
+  gender?: string;
+  mobile: string;
+  postcode: string;
+  photo?: string;
+  category?: string;
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // API route for model signups
-  app.post("/api/signups", async (req, res) => {
+  app.post("/api/signups", async (req: express.Request<{}, {}, SignupRequestBody>, res: express.Response) => {
     try {
       console.log('Received signup form submission');
       const { name, email, age, gender, mobile, postcode, photo, category } = req.body;
@@ -66,73 +78,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         mobile,
         postcode,
         photo_url: photoUrl,
-        category
+        category,
+        gender: gender || 'female'
       };
       
-      // Try to include gender but handle the case where it might not exist in schema
-      if (gender) {
-        try {
-          let responseData;
-          const { data, error } = await supabase
-            .from('signups')
-            .insert([{ ...submission, gender }])
-            .select();
-          
-          if (error) {
-            console.error('Database error with gender:', error);
-            
-            // If gender column doesn't exist, try without it
-            if (error.message.includes('gender')) {
-              console.log('Retrying without gender field...');
-              const { data: dataNoGender, error: errorNoGender } = await supabase
-                .from('signups')
-                .insert([submission])
-                .select();
-              
-              if (errorNoGender) {
-                console.error('Database error without gender:', errorNoGender);
-                throw errorNoGender;
-              }
-              
-              responseData = dataNoGender;
-            } else {
-              throw error;
-            }
-          } else {
-            responseData = data;
-          }
-          
-          console.log('Signup saved successfully to database');
-          
-          // Send email notification
-          console.log('Preparing to send email notification...');
-          if (responseData && responseData.length > 0) {
-            try {
-              console.log('Calling email service...');
-              const emailSent = await sendSignupNotification({ ...responseData[0], gender: gender || 'female' });
-              if (emailSent) {
-                console.log('Email notification sent successfully');
-              } else {
-                console.warn('Failed to send email notification - service returned false');
-              }
-            } catch (emailError) {
-              console.error('Error in email notification process:', emailError);
-              // Continue even if email fails
-            }
-          } else {
-            console.warn('No data returned from database insert, skipping email notification');
-          }
-          
-          res.json({ success: true, data: responseData });
-        } catch (insertError: any) {
-          console.error('Signup process error:', insertError);
-          res.status(500).json({ 
-            error: 'Failed to process signup', 
-            details: insertError.message 
-          });
-        }
-      } else {
-        // Original code without gender
         const { data, error } = await supabase
           .from('signups')
           .insert([submission])
@@ -150,7 +99,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (data && data.length > 0) {
           try {
             console.log('Calling email service...');
-            const emailSent = await sendSignupNotification({ ...data[0], gender: 'female' });
+          const emailSent = await sendSignupNotification({ ...data[0], gender: gender || 'female' });
             if (emailSent) {
               console.log('Email notification sent successfully');
             } else {
@@ -165,12 +114,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         
         res.json({ success: true, data });
-      }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Signup process error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       res.status(500).json({ 
         error: 'Failed to process signup', 
-        details: error.message 
+        details: errorMessage 
       });
     }
   });
