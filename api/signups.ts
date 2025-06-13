@@ -1,58 +1,44 @@
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import nodemailer from 'nodemailer';
-import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { Buffer } from 'buffer';
 
-// Helper to require env vars
-function requiredEnv(name: string): string {
-  const value = process.env[name];
-  if (!value) {
-    throw new Error(`Missing required environment variable: ${name}`);
-  }
-  return value;
-}
+// Environment variables configuration
+const supabaseUrl = process.env.SUPABASE_URL || 'https://ltgqtqqspkqaviibqnah.supabase.co';
+const supabaseKey = process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx0Z3F0cXFzcGtxYXZpaWJxbmFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ4NjEyNzgsImV4cCI6MjA2MDQzNzI3OH0.7pUOSVhCdMQH5OlU7mpan-Pwhez0D4T9vD6kHI0Ry_c';
+const emailUser = process.env.EMAIL_USER || 'beautymodels2000@gmail.com';
+const emailPassword = process.env.EMAIL_PASSWORD || 'pbzsldlrsjnmanbu';
+const adminEmail = process.env.ADMIN_EMAIL || 'modelsvison@gmail.com';
 
-// Supabase configuration
-const supabaseUrl = requiredEnv('SUPABASE_URL');
-const supabaseKey = requiredEnv('SUPABASE_KEY');
+// Initialize Supabase client
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Email configuration
-const emailConfig = {
-  user: requiredEnv('EMAIL_USER'),
-  password: requiredEnv('EMAIL_PASSWORD'),
-  adminEmail: requiredEnv('ADMIN_EMAIL'),
-};
-
-// Create email transporter
+// Initialize email transporter
 const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false,
+  service: 'gmail',
   auth: {
-    user: emailConfig.user,
-    pass: emailConfig.password,
+    user: emailUser,
+    pass: emailPassword,
   },
 });
 
-interface SignupData {
+interface SignupRequestBody {
   name: string;
   email: string;
   age: string;
   gender?: string;
   mobile: string;
   postcode: string;
-  photo_url?: string | null;
+  photo?: string;
   category?: string;
-  id?: string;
-  created_at?: string;
 }
 
-async function sendSignupNotification(signupData: SignupData): Promise<boolean> {
+async function sendSignupNotification(signupData: any): Promise<boolean> {
   try {
-    // Test connection before sending
+    // Verify connection
     await transporter.verify();
     
-    // Email content
+    // Prepare email subject
     let subject;
     if (signupData.category === 'landingads') {
       subject = `${signupData.name}--Ad-Ld-${signupData.postcode}-${signupData.age}-${signupData.mobile}-${signupData.email}`;
@@ -63,11 +49,11 @@ async function sendSignupNotification(signupData: SignupData): Promise<boolean> 
     } else {
       subject = `${signupData.name}--Fb-${signupData.postcode}-${signupData.age}-${signupData.mobile}-${signupData.email}`;
     }
-
+    
     const mailOptions = {
-      from: `${signupData.name} <${signupData.email}>`,
+      from: `${signupData.name} <${emailUser}>`,
       replyTo: signupData.email,
-      to: emailConfig.adminEmail,
+      to: adminEmail,
       subject: subject,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
@@ -95,25 +81,29 @@ async function sendSignupNotification(signupData: SignupData): Promise<boolean> 
           
           <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #777;">
             <p>This is an automated notification from your modeling agency website.</p>
-            <p>View all submissions in your <a href="${supabaseUrl}" style="color: #d1416b;">Supabase dashboard</a>.</p>
+            <p>View all submissions in your <a href="https://ltgqtqqspkqaviibqnah.supabase.co" style="color: #d1416b;">Supabase dashboard</a>.</p>
           </div>
         </div>
       `,
     };
-
+    
     await transporter.sendMail(mailOptions);
     return true;
   } catch (error) {
-    console.error('Email sending failed:', error);
+    console.error('Error sending email:', error);
     return false;
   }
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Enable CORS
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+  );
 
   if (req.method === 'OPTIONS') {
     res.status(200).end();
@@ -126,7 +116,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const { name, email, age, gender, mobile, postcode, photo, category } = req.body;
+    const { name, email, age, gender, mobile, postcode, photo, category } = req.body as SignupRequestBody;
     let photoUrl: string | null = null;
 
     // Handle the photo upload using base64 if provided
@@ -144,16 +134,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             contentType: mime,
             upsert: false
           });
-
+          
         if (uploadError) throw uploadError;
-
+        
         const { data: urlData } = supabase.storage
           .from('model-photos')
           .getPublicUrl(fileName);
-        
+          
         photoUrl = urlData.publicUrl;
       } catch (uploadErr) {
-        console.error('Photo upload failed:', uploadErr);
+        console.error('Photo upload error:', uploadErr);
         // Continue with submission even if photo upload fails
       }
     }
@@ -169,12 +159,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       category,
       gender: gender || 'female',
     };
-
+    
     const { data, error } = await supabase
       .from('signups')
       .insert([submission])
       .select();
-
+      
     if (error) throw error;
 
     // Send email notification
@@ -183,11 +173,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     res.status(200).json({ success: true, data });
-  } catch (error) {
-    console.error('Signup processing failed:', error);
-    res.status(500).json({ 
-      error: 'Failed to process signup', 
-      details: error instanceof Error ? error.message : 'Unknown error' 
-    });
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    console.error('API Error:', error);
+    res.status(500).json({ error: errorMessage });
   }
-}
+} 

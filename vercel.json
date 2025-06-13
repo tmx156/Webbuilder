@@ -16,13 +16,5 @@
       "source": "/(.*)",
       "destination": "/index.html"
     }
-  ],
-  "env": {
-    "NODE_ENV": "production",
-    "SUPABASE_URL": "@supabase_url",
-    "SUPABASE_KEY": "@supabase_key",
-    "EMAIL_USER": "@email_user",
-    "EMAIL_PASSWORD": "@email_password",
-    "ADMIN_EMAIL": "@admin_email"
-  }
+  ]
 }
