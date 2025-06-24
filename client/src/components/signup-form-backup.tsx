@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { FaShieldAlt, FaCamera, FaArrowRight } from "react-icons/fa";
+// Facebook Pixel tracking - no import needed
 
 interface SignupData {
   name: string;
@@ -118,11 +119,32 @@ export default function SignupForm() {
       
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       toast({
         title: "Success!",
         description: "Your application has been submitted successfully.",
       });
+
+      // Track with Stape API
+      try {
+        // ✅ Facebook Pixel tracking only
+        if (typeof window.fbq === 'function') {
+          window.fbq('track', 'Lead', {
+            content_category: 'Model Application',
+            content_name: 'Model Signup',
+            value: 2, // £2 lead value
+            currency: 'GBP'
+          });
+          window.fbq('trackCustom', 'ModelSignup', {
+            signup_method: 'backup_form',
+            category: formData.category || 'fb3'
+          });
+          console.log('✅ Backup Form tracked via Facebook Pixel');
+        }
+      } catch (error) {
+        console.error('Stape tracking failed:', error);
+      }
+
       queryClient.invalidateQueries({ queryKey: ['signups'] });
     },
     onError: (error: any) => {

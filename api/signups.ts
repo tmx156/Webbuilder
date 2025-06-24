@@ -31,6 +31,7 @@ interface SignupRequestBody {
   postcode: string;
   photo?: string;
   category?: string;
+  parentMobile?: string;
 }
 
 async function sendSignupNotification(signupData: any): Promise<boolean> {
@@ -66,6 +67,7 @@ async function sendSignupNotification(signupData: any): Promise<boolean> {
             <p><strong>Age:</strong> ${signupData.age}</p>
             <p><strong>Gender:</strong> ${(signupData.gender || 'female').charAt(0).toUpperCase() + (signupData.gender || 'female').slice(1)}</p>
             <p><strong>Mobile:</strong> ${signupData.mobile}</p>
+            ${signupData.parent_mobile ? `<p><strong>Parent's Mobile:</strong> ${signupData.parent_mobile}</p>` : ''}
             <p><strong>Postcode:</strong> ${signupData.postcode}</p>
             <p><strong>Category:</strong> ${signupData.category || 'Not specified'}</p>
             <p><strong>Submission Date:</strong> ${new Date().toLocaleString()}</p>
@@ -95,7 +97,7 @@ async function sendSignupNotification(signupData: any): Promise<boolean> {
   }
 }
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+const handler = async (req: VercelRequest, res: VercelResponse) => {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -116,7 +118,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const { name, email, age, gender, mobile, postcode, photo, category } = req.body as SignupRequestBody;
+    const { name, email, age, gender, mobile, postcode, photo, category, parentMobile } = req.body as SignupRequestBody;
     let photoUrl: string | null = null;
 
     // Handle the photo upload using base64 if provided
@@ -158,6 +160,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       photo_url: photoUrl,
       category,
       gender: gender || 'female',
+      parent_mobile: parentMobile || null,
     };
     
     const { data, error } = await supabase
@@ -169,7 +172,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Send email notification
     if (data && data.length > 0) {
-      await sendSignupNotification({ ...data[0], gender: gender || 'female' });
+      await sendSignupNotification({ 
+        ...data[0], 
+        gender: gender || 'female',
+        parent_mobile: parentMobile || null 
+      });
     }
 
     res.status(200).json({ success: true, data });
@@ -178,4 +185,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     console.error('API Error:', error);
     res.status(500).json({ error: errorMessage });
   }
-} 
+};
+
+export default handler; 

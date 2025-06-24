@@ -1,5 +1,6 @@
 import { motion, useScroll, useTransform, useSpring, useInView, useAnimation } from "framer-motion";
 import { useRef, useEffect, useState } from "react";
+import OptimizedImage from "@/components/ui/optimized-image";
 
 const categories = [
   {
@@ -107,11 +108,15 @@ function CategoryCard({ category, index }: { category: any, index: number }) {
             }}
           />
           
-          <img 
+          <OptimizedImage 
             src={category.image}
             alt={`${category.title} model`}
             className="w-full h-full object-cover object-center scale-90"
             style={{ objectPosition: "center 30%" }}
+            width={640}
+            height={480}
+            sizes="(max-width: 768px) 100vw, 50vw"
+            quality={80}
           />
         </div>
         

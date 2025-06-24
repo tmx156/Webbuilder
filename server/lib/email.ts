@@ -34,6 +34,7 @@ interface SignupData {
   created_at?: string;
   fb?: string;
   ld?: string;
+  parent_mobile?: string;
 }
 
 /**
@@ -82,6 +83,7 @@ export async function sendSignupNotification(signupData: SignupData): Promise<bo
             <p><strong>Age:</strong> ${signupData.age}</p>
             <p><strong>Gender:</strong> ${(signupData.gender || 'female').charAt(0).toUpperCase() + (signupData.gender || 'female').slice(1)}</p>
             <p><strong>Mobile:</strong> ${signupData.mobile}</p>
+            ${signupData.parent_mobile ? `<p><strong>Parent's Mobile:</strong> ${signupData.parent_mobile}</p>` : ''}
             <p><strong>Postcode:</strong> ${signupData.postcode}</p>
             <p><strong>Category:</strong> ${signupData.category || 'Not specified'}</p>
             <p><strong>Submission Date:</strong> ${new Date().toLocaleString()}</p>

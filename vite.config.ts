@@ -27,11 +27,48 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    // Performance optimizations
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Separate vendor chunks for better caching
+          react: ['react', 'react-dom'],
+          router: ['wouter'],
+          query: ['@tanstack/react-query'],
+          ui: ['@radix-ui/react-accordion', '@radix-ui/react-alert-dialog', '@radix-ui/react-avatar'],
+          motion: ['framer-motion'],
+          three: ['three', '@react-three/fiber', '@react-three/drei'],
+        },
+      },
+    },
+    // Optimize chunk sizes
+    chunkSizeWarningLimit: 1000,
+    // Enable source maps for production debugging (optional)
+    sourcemap: false,
+    // Minimize CSS
+    cssMinify: true,
+    // Optimize assets
+    assetsInlineLimit: 4096,
   },
   server: {
     fs: {
       strict: true,
       deny: ["**/.*"],
     },
+  },
+  // Performance optimizations for dev server
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      'wouter',
+      '@tanstack/react-query',
+      'framer-motion',
+    ],
+    exclude: [
+      'three',
+      '@react-three/fiber',
+      '@react-three/drei',
+    ],
   },
 });

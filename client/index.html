@@ -2,21 +2,167 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=5" />
     <title>LevelOneTalent - Models Wanted | Professional Modeling Agency</title>
     <meta name="description" content="Join LevelOneTalent modeling agency. All ages, all backgrounds welcome. Professional guidance from application to runway. No registration fees. Start your modeling career today.">
     <meta property="og:title" content="LevelOneTalent - Models Wanted">
     <meta property="og:description" content="Professional modeling agency connecting diverse talent with leading fashion brands. Begin your modeling journey with expert guidance.">
     <meta property="og:type" content="website">
     <meta property="og:image" content="https://images.unsplash.com/photo-1469334031218-e382a71b716b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=630">
+    <meta name="robots" content="index, follow">
+    <meta name="keywords" content="modeling agency, fashion models, talent agency, modeling careers, professional models">
+    <meta name="theme-color" content="#f43f5e">
+    
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+    
+    <!-- DNS Prefetch for external resources -->
+    <link rel="dns-prefetch" href="//fonts.googleapis.com">
+    <link rel="dns-prefetch" href="//fonts.gstatic.com">
+    <link rel="dns-prefetch" href="//images.unsplash.com">
+    <link rel="dns-prefetch" href="//i.imgur.com">
+    
+    <!-- Preconnect for critical resources -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://images.unsplash.com">
+    
+    <!-- Critical CSS for above-the-fold content -->
+    <link rel="stylesheet" href="/critical.css">
+    
+    <!-- Preload critical fonts with font-display: swap -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap"></noscript>
+    
+    <!-- Preload critical hero background image -->
+    <link rel="preload" as="image" href="https://images.unsplash.com/photo-1469334031218-e382a71b716b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600&q=75" media="(max-width: 768px)">
+    <link rel="preload" as="image" href="https://images.unsplash.com/photo-1469334031218-e382a71b716b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&h=1080&q=80" media="(min-width: 769px)">
+    
+    <!-- Defer third-party DNS prefetch -->
+    <link rel="dns-prefetch" href="//www.googletagmanager.com">
+    <link rel="dns-prefetch" href="//connect.facebook.net">
+    <link rel="dns-prefetch" href="//sc-static.net">
+    
+    <style>
+      /* Inline critical CSS to prevent render blocking */
+      body { 
+        margin: 0; 
+        font-family: 'Inter', sans-serif; 
+        background: linear-gradient(135deg, #1f2937 0%, #374151 50%, #111827 100%);
+        min-height: 100vh;
+      }
+      #root { 
+        min-height: 100vh; 
+      }
+      .loading-fallback {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #1f2937 0%, #374151 50%, #111827 100%);
+        color: white;
+        font-size: 1.125rem;
+      }
+      .spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid rgba(255,255,255,0.3);
+        border-top: 3px solid #f43f5e;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 1rem;
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Loading fallback -->
+      <div class="loading-fallback">
+        <div style="text-align: center;">
+          <div class="spinner"></div>
+          <div>Loading LevelOneTalent...</div>
+        </div>
+      </div>
+    </div>
+    
     <script type="module" src="/src/main.tsx"></script>
-    <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->
-    <script type="text/javascript" src="https://replit.com/public/js/replit-dev-banner.js"></script>
+    
+    <!-- Optimize third-party scripts loading -->
+    <script>
+      // Optimize third-party loading with requestIdleCallback
+      function loadThirdPartyScripts() {
+        // Google Analytics - Load with higher priority
+        if (!window.gtag) {
+          const gtagScript = document.createElement('script');
+          gtagScript.async = true;
+          gtagScript.src = 'https://www.googletagmanager.com/gtag/js?id=G-GBX3LZY024';
+          document.head.appendChild(gtagScript);
+          
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-GBX3LZY024');
+        }
+        
+        // Facebook Pixel - Load after GA
+        setTimeout(() => {
+          if (!window.fbq) {
+            !function(f,b,e,v,n,t,s)
+            {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+            n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+            if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+            n.queue=[];t=b.createElement(e);t.async=!0;
+            t.src=v;s=b.getElementsByTagName(e)[0];
+            s.parentNode.insertBefore(t,s)}(window, document,'script',
+            'https://connect.facebook.net/en_US/fbevents.js');
+            fbq('init', '3984186828576131');
+            fbq('track', 'PageView');
+          }
+        }, 500);
+        
+        // Snapchat Pixel - Lowest priority
+        setTimeout(() => {
+          if (!window.snaptr) {
+            (function(e,t,n){if(e.snaptr)return;var a=e.snaptr=function()
+            {a.handleRequest?a.handleRequest.apply(a,arguments):a.queue.push(arguments)};
+            a.queue=[];var s='script';r=t.createElement(s);r.async=!0;
+            r.src=n;var u=t.getElementsByTagName(s)[0];
+            u.parentNode.insertBefore(r,u);})(window,document,
+            'https://sc-static.net/scevent.min.js');
+
+            snaptr('init', 'c7d2a97d-0b30-4ada-9992-0c5030849a0c', {
+            'user_email': '__INSERT_USER_EMAIL__'
+            });
+            snaptr('track', 'PAGE_VIEW');
+          }
+        }, 1000);
+      }
+      
+      // Use requestIdleCallback for better performance
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(loadThirdPartyScripts);
+      } else {
+        // Fallback for browsers without requestIdleCallback
+        setTimeout(loadThirdPartyScripts, 2000);
+      }
+      
+      // Also load on user interaction (for better CWV scores)
+      ['mousedown', 'touchstart', 'keydown', 'scroll'].forEach(event => {
+        document.addEventListener(event, loadThirdPartyScripts, { once: true, passive: true });
+      });
+    </script>
+    
+    <!-- Meta Pixel NoScript -->
+    <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=3984186828576131&ev=PageView&noscript=1"
+    /></noscript>
   </body>
 </html>

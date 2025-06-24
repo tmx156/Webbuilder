@@ -17,6 +17,7 @@ interface SignupRequestBody {
   postcode: string;
   photo?: string;
   category?: string;
+  parentMobile?: string;
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -24,8 +25,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/signups", async (req: express.Request<{}, {}, SignupRequestBody>, res: express.Response) => {
     try {
       console.log('Received signup form submission');
-      const { name, email, age, gender, mobile, postcode, photo, category } = req.body;
-      console.log('Form data received:', { name, email, age, gender, mobile, postcode, category, hasPhoto: !!photo });
+      const { name, email, age, gender, mobile, postcode, photo, category, parentMobile } = req.body;
+      console.log('Form data received:', { name, email, age, gender, mobile, postcode, category, hasPhoto: !!photo, parentMobile });
       
       // Handle the photo upload using base64 if provided
       let photoUrl = null;
@@ -79,7 +80,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         postcode,
         photo_url: photoUrl,
         category,
-        gender: gender || 'female'
+        gender: gender || 'female',
+        parent_mobile: parentMobile || null
       };
       
         const { data, error } = await supabase
@@ -99,7 +101,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (data && data.length > 0) {
           try {
             console.log('Calling email service...');
-          const emailSent = await sendSignupNotification({ ...data[0], gender: gender || 'female' });
+          const emailSent = await sendSignupNotification({ 
+            ...data[0], 
+            gender: gender || 'female',
+            parent_mobile: parentMobile || null 
+          });
             if (emailSent) {
               console.log('Email notification sent successfully');
             } else {

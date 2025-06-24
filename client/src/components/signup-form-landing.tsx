@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { FaShieldAlt, FaCamera, FaArrowRight, FaSpinner, FaArrowLeft } from "react-icons/fa";
+// Facebook Pixel tracking - no import needed
 
 interface SignupData {
   name: string;
@@ -87,12 +88,33 @@ export default function SignupFormLanding({ onGenderChange, onAgeChange, onFormS
       const response = await apiRequest("POST", "/api/signups", data);
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       setIsSubmitting(false);
       toast({
         title: "Success!",
         description: "Your application has been submitted. We'll be in touch soon!",
       });
+
+      // Track with Stape API
+      try {
+        // ✅ Facebook Pixel tracking only
+        if (typeof window.fbq === 'function') {
+          window.fbq('track', 'Lead', {
+            content_category: 'Model Application',
+            content_name: 'Landing Form',
+            value: 2, // £2 lead value
+            currency: 'GBP'
+          });
+          window.fbq('trackCustom', 'ModelSignup', {
+            signup_method: 'landing_form',
+            category: formData.category || 'fb3'
+          });
+          console.log('✅ Landing Form tracked via Facebook Pixel');
+        }
+      } catch (error) {
+        console.error('Stape tracking failed:', error);
+      }
+
       setFormData({ 
         name: "", 
         email: "", 
@@ -333,12 +355,15 @@ export default function SignupFormLanding({ onGenderChange, onAgeChange, onFormS
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
+              <label htmlFor="gender-select" className="sr-only">Select your gender</label>
               <select
+                id="gender-select"
                 value={formData.gender}
                 onChange={(e) => handleInputChange("gender", e.target.value)}
                 onFocus={handleInputFocus}
                 className="w-full px-3 py-2 rounded-xl bg-white/80 border-0 focus:ring-0 text-sm h-14 text-lg md:h-10 md:text-sm"
                 disabled={signupMutation.isPending}
+                aria-label="Select your gender"
               >
                 <option value="" disabled>Gender</option>
                 <option value="female">Female</option>
@@ -457,7 +482,7 @@ export default function SignupFormLanding({ onGenderChange, onAgeChange, onFormS
                 type="text"
                 value={formData.age}
                 onChange={(e) => handleInputChange('age', e.target.value)}
-                placeholder="All ages"
+                placeholder="Age"
                 className="w-full px-3 py-2 rounded-xl bg-white/80 border-0 focus:ring-0 text-sm h-14 text-lg md:h-10 md:text-sm"
                 whileFocus={{ scale: 1.02 }}
                 disabled={signupMutation.isPending}

@@ -11,3 +11,5 @@ vite.config.ts.*
 .env.development
 *.log
 Thumbs.db
+
+.vercel

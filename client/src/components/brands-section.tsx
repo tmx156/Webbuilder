@@ -76,6 +76,10 @@ export default function BrandsSection() {
                     src={brand.logo}
                     alt={`${brand.name} logo`}
                     className="h-12 md:h-16 object-contain opacity-70 hover:opacity-100 transition-all duration-300"
+                    width="120"
+                    height="64"
+                    loading="lazy"
+                    decoding="async"
                   />
                 </div>
               ))}
@@ -86,6 +90,10 @@ export default function BrandsSection() {
                     src={brand.logo}
                     alt={`${brand.name} logo`}
                     className="h-12 md:h-16 object-contain opacity-70 hover:opacity-100 transition-all duration-300"
+                    width="120"
+                    height="64"
+                    loading="lazy"
+                    decoding="async"
                   />
                 </div>
               ))}

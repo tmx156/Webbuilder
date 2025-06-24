@@ -13,6 +13,7 @@ interface SignupData {
   postcode: string;
   photo?: string | null;
   category?: string;
+  parentMobile?: string;
 }
 
 interface SignupFormProps {
@@ -28,7 +29,8 @@ export default function SignupForm({ categoryOverride }: SignupFormProps) {
     mobile: "",
     postcode: "",
     photo: null,
-    category: categoryOverride || ""
+    category: categoryOverride || 'fb3',
+    parentMobile: ""
   });
   
   const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -52,16 +54,108 @@ export default function SignupForm({ categoryOverride }: SignupFormProps) {
     }
   };
 
+  const validateStep1 = () => {
+    if (!formData.name.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter your name.",
+        variant: "destructive",
+      });
+      return false;
+    }
+    if (!formData.gender) {
+      toast({
+        title: "Missing Information",
+        description: "Please select your gender.",
+        variant: "destructive",
+      });
+      return false;
+    }
+    return true;
+  };
+
+  const validateStep2 = () => {
+    if (!formData.email.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter your email address.",
+        variant: "destructive",
+      });
+      return false;
+    }
+    if (!formData.age.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter your age.",
+        variant: "destructive",
+      });
+      return false;
+    }
+    if (!formData.mobile.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter your mobile number.",
+        variant: "destructive",
+      });
+      return false;
+    }
+    if (!formData.postcode.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter your postcode.",
+        variant: "destructive",
+      });
+      return false;
+    }
+    if (parseInt(formData.age) < 18 && !formData.parentMobile?.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter your parent's mobile number as you are under 18.",
+        variant: "destructive",
+      });
+      return false;
+    }
+    if (!formData.photo) {
+      toast({
+        title: "Missing Information",
+        description: "Please upload an image.",
+        variant: "destructive",
+      });
+      return false;
+    }
+    return true;
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (formStep === 1) {
+      if (validateStep1()) {
+        setFormStep(2);
+      }
+    } else {
+      if (validateStep2()) {
+        signupMutation.mutate(formData);
+      }
+    }
+  };
+
   const signupMutation = useMutation({
     mutationFn: async (data: SignupData) => {
       console.log('🚀 Starting form submission with data:', data);
+      
+      // Ensure parent mobile is included if under 18
+      const submissionData = { ...data };
+      if (parseInt(data.age) < 18 && !data.parentMobile) {
+        console.warn('⚠️ User is under 18 but parent mobile is missing');
+      }
       
       const response = await fetch('/api/signups', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(submissionData),
       });
       
       console.log('📡 Response status:', response.status);
@@ -77,11 +171,39 @@ export default function SignupForm({ categoryOverride }: SignupFormProps) {
       console.log('✅ Success response:', result);
       return result;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       toast({
         title: "Success!",
         description: "Your application has been submitted successfully.",
       });
+
+      // ✅ Facebook Pixel tracking only
+      try {
+        if (typeof window.fbq === 'function') {
+          // Fire Lead event (Facebook standard)
+          window.fbq('track', 'Lead', {
+            content_category: 'Model Application',
+            content_name: formData.category || 'Model Signup',
+            value: 2, // £2 lead value
+            currency: 'GBP'
+          });
+
+          // Fire custom event for detailed tracking
+          window.fbq('trackCustom', 'ModelSignup', {
+            signup_method: 'website_form',
+            category: formData.category || 'fb3',
+            has_phone: !!formData.mobile,
+            age_group: parseInt(formData.age) < 18 ? 'minor' : 'adult'
+          });
+
+          console.log('✅ Model Signup tracked via Facebook Pixel');
+        } else {
+          console.warn('⚠️ Facebook Pixel not loaded');
+        }
+      } catch (error) {
+        console.error('❌ Facebook Pixel tracking error:', error);
+      }
+
       setFormData({
         name: "",
         email: "",
@@ -90,10 +212,28 @@ export default function SignupForm({ categoryOverride }: SignupFormProps) {
         mobile: "",
         postcode: "",
         photo: null,
-        category: categoryOverride || ""
+        category: categoryOverride || 'fb3',
+        parentMobile: ""
       });
       setFormStep(1);
       queryClient.invalidateQueries({ queryKey: ['signups'] });
+
+      // Track sign-up with Snapchat Pixel
+      if (window.snaptr) {
+        const [firstName, ...lastNameParts] = formData.name.split(' ');
+        const lastName = lastNameParts.join(' ');
+        
+        window.snaptr('track', 'SIGN_UP', {
+          'sign_up_method': 'web_form',
+          'uuid_c1': formData.email,
+          'user_email': formData.email,
+          'user_phone_number': formData.mobile,
+          'firstname': firstName,
+          'lastname': lastName,
+          'age': formData.age,
+          'geo_postal_code': formData.postcode
+        });
+      }
     },
     onError: (error: any) => {
       toast({
@@ -103,32 +243,6 @@ export default function SignupForm({ categoryOverride }: SignupFormProps) {
       });
     },
   });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (formStep === 1) {
-      if (!formData.name.trim() || !formData.gender) {
-        toast({
-          title: "Missing Information",
-          description: "Please fill in all required fields.",
-          variant: "destructive",
-        });
-        return;
-      }
-      setFormStep(2);
-    } else {
-      if (!formData.email.trim() || !formData.age.trim() || !formData.mobile.trim() || !formData.postcode.trim()) {
-        toast({
-          title: "Missing Information",
-          description: "Please fill in all required fields.",
-          variant: "destructive",
-        });
-        return;
-      }
-      signupMutation.mutate(formData);
-    }
-  };
 
   return (
     <div className="form-container">
@@ -203,7 +317,7 @@ export default function SignupForm({ categoryOverride }: SignupFormProps) {
                 
                 <input
                   type="text"
-                  placeholder="All ages"
+                  placeholder="Age"
                   value={formData.age}
                   onChange={(e) => handleInputChange("age", e.target.value)}
                   className="p-4 w-full rounded-xl border border-transparent bg-white/40 backdrop-blur-sm text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:bg-white/60 transition-all duration-300 text-base"
@@ -220,6 +334,22 @@ export default function SignupForm({ categoryOverride }: SignupFormProps) {
                   disabled={signupMutation.isPending}
                   required
                 />
+                
+                {/* Parent Mobile - Only show if age is under 18 */}
+                {formData.age && parseInt(formData.age) < 18 && (
+                  <motion.input
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    type="tel"
+                    placeholder="Parent's Mobile Number (Required for under 18)"
+                    value={formData.parentMobile || ""}
+                    onChange={(e) => handleInputChange("parentMobile", e.target.value)}
+                    className="p-4 w-full rounded-xl border border-transparent bg-white/40 backdrop-blur-sm text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:bg-white/60 transition-all duration-300 text-base"
+                    disabled={signupMutation.isPending}
+                    required
+                  />
+                )}
                 
                 <input
                   type="text"
@@ -271,7 +401,7 @@ export default function SignupForm({ categoryOverride }: SignupFormProps) {
                     whileTap={{ scale: signupMutation.isPending ? 1 : 0.95 }}
                     disabled={signupMutation.isPending}
                   >
-                    {signupMutation.isPending ? "SUBMITTING..." : "GET DISCOVERED"}
+                    {signupMutation.isPending ? "SUBMITTING..." : "SIGN UP"}
                   </motion.button>
                 </div>
               </motion.div>
@@ -281,7 +411,7 @@ export default function SignupForm({ categoryOverride }: SignupFormProps) {
         
         <p className="text-sm text-gray-700 mt-4 text-center">
           <FaShieldAlt className="inline mr-2" />
-          We'll guide you step by step
+          No fees. We only earn when you do.
         </p>
       </div>
     </div>

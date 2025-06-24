@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { FaShieldAlt, FaCamera, FaArrowRight } from "react-icons/fa";
+// Facebook Pixel tracking - no import needed
 
 interface SignupData {
   name: string;
@@ -112,11 +113,32 @@ export default function SignupForm() {
       const response = await apiRequest("POST", "/api/signups", data);
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       toast({
         title: "Success!",
         description: "Your application has been submitted. We'll be in touch soon!",
       });
+
+      // Track with Stape API
+      try {
+        // ✅ Facebook Pixel tracking only
+        if (typeof window.fbq === 'function') {
+          window.fbq('track', 'Lead', {
+            content_category: 'Model Application',
+            content_name: 'Model Signup',
+            value: 2, // £2 lead value
+            currency: 'GBP'
+          });
+          window.fbq('trackCustom', 'ModelSignup', {
+            signup_method: 'old_form',
+            category: formData.category || 'fb3'
+          });
+          console.log('✅ Old Form tracked via Facebook Pixel');
+        }
+      } catch (error) {
+        console.error('Stape tracking failed:', error);
+      }
+
       setFormData({ 
         name: "", 
         email: "", 
