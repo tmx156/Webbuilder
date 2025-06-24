@@ -16,6 +16,7 @@ const FAQ = lazy(() => import("@/pages/faq"));
 const Careers = lazy(() => import("@/pages/careers"));
 const AdsPage = lazy(() => import("@/pages/ads"));
 const LandingAdsPage = lazy(() => import("@/pages/landingads"));
+const Snapchat = lazy(() => import("@/pages/snapchat"));
 
 // Loading component
 const PageLoader = () => (
@@ -40,6 +41,7 @@ function Router() {
         <Route path="/careers" component={Careers} />
         <Route path="/ads" component={AdsPage} />
         <Route path="/landingads" component={LandingAdsPage} />
+        <Route path="/snapchat" component={Snapchat} />
         <Route component={NotFound} />
       </Switch>
     </Suspense>
