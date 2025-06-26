@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap');
+/* PERFORMANCE OPTIMIZED: Removed Google Fonts @import - fonts are now preloaded in HTML for better performance */
+/* @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap'); */
 /* stylelint-disable at-rule-no-unknown */
 /* stylelint-disable at-rule-empty-line-before */
 /* stylelint-disable function-no-unknown */

@@ -8,7 +8,7 @@ declare global {
   }
 }
 
-// Helper function to detect device capability
+// Helper function to detect device capability - enhanced
 function detectDevicePerformance() {
   // Check for mobile device
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -16,8 +16,15 @@ function detectDevicePerformance() {
   // Check device memory if available
   const lowMemory = (navigator as any).deviceMemory !== undefined && (navigator as any).deviceMemory < 4;
   
+  // Check connection speed if available
+  const slowConnection = (navigator as any).connection?.effectiveType === 'slow-2g' || 
+                        (navigator as any).connection?.effectiveType === '2g';
+  
+  // Check if user prefers reduced motion
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  
   // Return performance tier
-  if (isMobile || lowMemory) {
+  if (isMobile || lowMemory || slowConnection || prefersReducedMotion) {
     return 'low';
   }
   
@@ -30,11 +37,11 @@ function FloatingParticles() {
   // Detect device performance once
   const performanceTier = useMemo(() => detectDevicePerformance(), []);
   
-  // Set particle count based on performance tier
-  const particleCount = useMemo(() => performanceTier === 'high' ? 50 : 25, [performanceTier]);
+  // Set particle count based on performance tier - optimized
+  const particleCount = useMemo(() => performanceTier === 'high' ? 50 : 20, [performanceTier]);
   
-  // Determine animation frame throttling
-  const frameSkip = useMemo(() => performanceTier === 'high' ? 1 : 2, [performanceTier]);
+  // Determine animation frame throttling - optimized
+  const frameSkip = useMemo(() => performanceTier === 'high' ? 1 : 3, [performanceTier]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -126,6 +133,24 @@ function FloatingParticles() {
     return () => {
       window.removeEventListener('resize', resizeHandler);
       cancelAnimationFrame(animationFrameId);
+      
+      // Enhanced cleanup for memory management
+      if (window.resizeTimeoutId) {
+        clearTimeout(window.resizeTimeoutId);
+        delete window.resizeTimeoutId;
+      }
+      
+      // Clear canvas and free memory
+      if (canvas) {
+        ctx?.clearRect(0, 0, canvas.width, canvas.height);
+        canvas.width = 1;
+        canvas.height = 1;
+      }
+      
+      // Clear particles array
+      particles.length = 0;
+      
+      console.log('WebGL Background: Memory cleaned up');
     };
   }, [particleCount, frameSkip, performanceTier]);
 

@@ -94,6 +94,17 @@ export default function SignupForm() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      const maxSize = 50 * 1024 * 1024; // 50MB
+      
+      if (file.size > maxSize) {
+        toast({
+          title: "File too large",
+          description: "Please select an image smaller than 50MB.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
       setPhotoFile(file);
       const reader = new FileReader();
       reader.onload = () => {

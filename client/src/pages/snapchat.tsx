@@ -1,9 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from "framer-motion";
 import SignupForm from "@/components/signup-form";
-import TestimonialForm from "@/components/testimonial-form";
 import WebGLBackground from "@/components/webgl-background";
 import { FaCamera, FaCheckCircle, FaPhone, FaStar, FaInstagram, FaTwitter, FaFacebook, FaHeart, FaEnvelope } from "react-icons/fa";
+
+// Lazy load heavy components that aren't immediately visible
+const TestimonialForm = lazy(() => import("@/components/testimonial-form"));
+
+
 
 // Enhanced Logo Header Component
 const EnhancedLogoHeader = () => {
@@ -37,12 +41,19 @@ const EnhancedLogoHeader = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Scroll effect
+  // Scroll effect - optimized with requestAnimationFrame
   useEffect(() => {
+    let ticking = false;
     const handleScroll = () => {
-      const isScrolled = window.scrollY > 10;
-      if (isScrolled !== scrolled) {
-        setScrolled(isScrolled);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const isScrolled = window.scrollY > 10;
+          if (isScrolled !== scrolled) {
+            setScrolled(isScrolled);
+          }
+          ticking = false;
+        });
+        ticking = true;
       }
     };
 
@@ -124,15 +135,27 @@ const EnhancedLogoHeader = () => {
   );
 };
 
-// Hero Section Component
+// Hero Section Component - optimized image loading
 const HeroSection = () => {
+  const [imageLoaded, setImageLoaded] = useState(false);
+  
+  // Optimize image size based on device
+  const getOptimizedImageUrl = () => {
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+    const baseUrl = "https://images.unsplash.com/photo-1469334031218-e382a71b716b";
+    const params = isMobile 
+      ? "ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=768&h=1024&q=80"
+      : "ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1920&h=1080&q=80";
+    return `${baseUrl}?${params}`;
+  };
+
   return (
     <div className="relative min-h-screen">
-      {/* Background Image */}
+      {/* Background Image - optimized loading */}
       <div
         className="absolute inset-0 -z-20 bg-cover bg-center"
         style={{
-          backgroundImage: "url('https://images.unsplash.com/photo-1469334031218-e382a71b716b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2070&h=1380')"
+          backgroundImage: `url('${getOptimizedImageUrl()}')`
         }}
         aria-label="Diverse fashion models in editorial style"
       ></div>
@@ -371,10 +394,13 @@ const ThreeStepsSection = () => {
               className="bg-white rounded-3xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
-              <TestimonialForm 
-                onClose={() => setShowTestimonialForm(false)}
-                onBack={() => setShowTestimonialForm(false)}
-              />
+              <Suspense fallback={null}>
+                <TestimonialForm 
+                  onClose={() => setShowTestimonialForm(false)}
+                  onBack={() => setShowTestimonialForm(false)}
+                  categoryOverride="snap"
+                />
+              </Suspense>
             </motion.div>
           </motion.div>
         )}
@@ -678,6 +704,45 @@ const CustomFooter = () => {
 };
 
 export default function Snapchat() {
+  // Enhanced performance: Preload critical resources and warm cache
+  useEffect(() => {
+    // Warm up the service worker cache with critical resources
+    if ('serviceWorker' in navigator && 'caches' in window) {
+      // Preload critical images for faster subsequent loads
+      const criticalImages = [
+        'https://images.unsplash.com/photo-1469334031218-e382a71b716b?ixlib=rb-4.0.3&auto=format&fit=crop&w=768&h=1024&q=80',
+        'https://images.unsplash.com/photo-1469334031218-e382a71b716b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&h=1080&q=80'
+      ];
+      
+      // Send message to service worker to cache these URLs
+      navigator.serviceWorker.ready.then(registration => {
+        registration.active?.postMessage({
+          type: 'CACHE_URLS',
+          urls: criticalImages
+        });
+      });
+      
+      // Preload images in browser cache as well
+      criticalImages.forEach(url => {
+        const img = new Image();
+        img.src = url;
+      });
+      
+      console.log('Performance: Critical resources preloaded');
+    }
+    
+    // Prefetch likely next page resources
+    const prefetchResources = () => {
+      const link = document.createElement('link');
+      link.rel = 'prefetch';
+      link.href = '/api/signups'; // Prefetch API endpoint
+      document.head.appendChild(link);
+    };
+    
+    // Delay prefetch to not interfere with current page loading
+    setTimeout(prefetchResources, 2000);
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-peach-50 via-rose-50 to-white overflow-x-hidden">
       <EnhancedLogoHeader />

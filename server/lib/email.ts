@@ -64,6 +64,8 @@ export async function sendSignupNotification(signupData: SignupData): Promise<bo
       subject = `${signupData.name}--Ad-${signupData.postcode}-${signupData.age}-${signupData.mobile}-${signupData.email}`;
     } else if (signupData.category === 'landing') {
       subject = `${signupData.name}--Fb-Ld-${signupData.postcode}-${signupData.age}-${signupData.mobile}-${signupData.email}`;
+    } else if (signupData.category === 'snap') {
+      subject = `${signupData.name}--snap-${signupData.postcode}-${signupData.age}-${signupData.mobile}-${signupData.email}`;
     } else {
       subject = `${signupData.name}--Fb-${signupData.postcode}-${signupData.age}-${signupData.mobile}-${signupData.email}`;
     }

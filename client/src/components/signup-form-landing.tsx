@@ -231,12 +231,12 @@ export default function SignupFormLanding({ onGenderChange, onAgeChange, onFormS
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      const maxSize = 5 * 1024 * 1024;
+      const maxSize = 50 * 1024 * 1024; // 50MB
       
       if (file.size > maxSize) {
         toast({
           title: "File too large",
-          description: "Please select an image smaller than 5MB.",
+          description: "Please select an image smaller than 50MB.",
           variant: "destructive",
         });
         return;

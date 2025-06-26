@@ -1,7 +1,9 @@
 import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import SignupForm from "./signup-form";
-import WebGLBackground from "./webgl-background";
+
+// Lazy load the WebGL background for better performance
+const WebGLBackground = lazy(() => import("./webgl-background"));
 
 // Add categories data for the boxes at the bottom
 const categories = [
@@ -30,6 +32,7 @@ const categories = [
 export default function HeroSection({ categoryOverride }: { categoryOverride?: string }) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [showWebGL, setShowWebGL] = useState(false);
+  const [isInteracted, setIsInteracted] = useState(false);
 
   // Preload critical background image
   useEffect(() => {
@@ -42,11 +45,33 @@ export default function HeroSection({ categoryOverride }: { categoryOverride?: s
       : "https://images.unsplash.com/photo-1469334031218-e382a71b716b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&h=1080&q=80";
   }, []);
 
-  // Delay WebGL loading to prioritize critical content
+  // Only load WebGL after user interaction or significant delay for better initial performance
   useEffect(() => {
-    const timer = setTimeout(() => setShowWebGL(true), 1000);
-    return () => clearTimeout(timer);
-  }, []);
+    const handleInteraction = () => {
+      if (!isInteracted) {
+        setIsInteracted(true);
+        setShowWebGL(true);
+      }
+    };
+
+    // Load WebGL on first interaction
+    const events = ['mousedown', 'touchstart', 'keydown', 'scroll'];
+    events.forEach(event => {
+      document.addEventListener(event, handleInteraction, { once: true, passive: true });
+    });
+
+    // Fallback: Load after 3 seconds if no interaction
+    const fallbackTimer = setTimeout(() => {
+      setShowWebGL(true);
+    }, 3000);
+
+    return () => {
+      events.forEach(event => {
+        document.removeEventListener(event, handleInteraction);
+      });
+      clearTimeout(fallbackTimer);
+    };
+  }, [isInteracted]);
 
   const backgroundImageUrl = typeof window !== 'undefined' && window.innerWidth < 768
     ? "https://images.unsplash.com/photo-1469334031218-e382a71b716b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600&q=75"
@@ -69,10 +94,12 @@ export default function HeroSection({ categoryOverride }: { categoryOverride?: s
         aria-label="Diverse fashion models in editorial style"
       ></div>
       
-      {/* WebGL-style animated overlay - Lazy loaded */}
+      {/* WebGL-style animated overlay - Lazy loaded with fallback */}
       {showWebGL && (
         <div className="absolute inset-0 -z-10">
-          <WebGLBackground />
+          <Suspense fallback={<div className="absolute inset-0 bg-gradient-to-br from-pink-500/10 via-purple-500/10 to-blue-500/10"></div>}>
+            <WebGLBackground />
+          </Suspense>
         </div>
       )}
       

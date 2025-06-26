@@ -4,13 +4,13 @@ VALUES (
   'model-photos', 
   'model-photos', 
   true, 
-  5242880, -- 5MB
+  52428800, -- 50MB
   ARRAY['image/jpeg', 'image/png', 'image/gif']::text[]
 )
 ON CONFLICT (id) DO UPDATE 
 SET 
   public = true,
-  file_size_limit = 5242880,
+  file_size_limit = 52428800,
   allowed_mime_types = ARRAY['image/jpeg', 'image/png', 'image/gif']::text[];
 
 -- Drop existing policies if they exist
